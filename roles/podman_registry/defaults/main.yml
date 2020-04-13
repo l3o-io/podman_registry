@@ -1,0 +1,8 @@
+--- # roles/podman_registry/defaults/main.yml
+
+skip_podman_registry_install: no
+
+podman_registry_dir: "/var/lib/containers/registry"
+
+podman_registry_container_name: "registry"
+podman_registry_container_image: "registry:2"

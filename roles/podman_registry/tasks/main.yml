@@ -1,0 +1,26 @@
+--- # roles/podman_registry/tasks/main.yml
+
+- name: Ensure registry directory structure exists
+  file:
+    path: "{{ podman_registry_dir }}"
+    state: directory
+  when: not skip_podman_registry_install
+
+- name: create container registry v2
+  vars:
+    container_name: "{{ podman_registry_container_name }}"
+    container_state: running
+    container_image: "{{ podman_registry_container_image }}"
+    container_run_args: >-
+      --rm
+      -v {{ podman_registry_dir }}:/var/lib/registry
+      {% if registry_certdir and registry_tls_fullchain and registry_tls_key %}
+      -v {{ registry_tls_fullchain }}:/certs/{{ registry_tls_fullchain | basename }}
+      -v {{ registry_tls_key }}:/certs/{{ registry_tls_key | basename }}
+      -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/{{ registry_tls_fullchain | basename }}
+      -e REGISTRY_HTTP_TLS_KEY=/certs/{{ registry_tls_key | basename }}
+      {% endif %}
+      -p 5000:5000
+  include_role:
+    name: podman_container_systemd
+  when: not skip_podman_registry_install
