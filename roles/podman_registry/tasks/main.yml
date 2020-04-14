@@ -1,10 +1,29 @@
 --- # roles/podman_registry/tasks/main.yml
 
-- name: Ensure registry directory structure exists
-  file:
-    path: "{{ podman_registry_dir }}"
-    state: directory
+- name: install python3-passlib package
+  package:
+    name: python3-passlib
+    state: installed
   when: not skip_podman_registry_install
+
+- name: ensure host volume directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ podman_registry_dir }}"
+    - "{{ nginx_confdir_volume_host_path }}"
+
+- name: create nginx configuration file for registry v2
+  template:
+    src: "nginxdomain.conf.j2"
+    dest: "{{ nginx_confdir_volume_host_path }}/{{ registry_domain }}.conf"
+
+- name: create htpasswd file for registry v2
+  htpasswd:
+    path: "{{ nginx_confdir_volume_host_path }}/{{ registry_domain }}.htpasswd"
+    name: "{{ podman_registry_user }}"
+    password: "{{ podman_registry_password }}"
 
 - name: create container registry v2
   vars:
@@ -14,13 +33,14 @@
     container_run_args: >-
       --rm
       -v {{ podman_registry_dir }}:/var/lib/registry
-      {% if registry_certdir and registry_tls_fullchain and registry_tls_key %}
-      -v {{ registry_tls_fullchain }}:/certs/{{ registry_tls_fullchain | basename }}
-      -v {{ registry_tls_key }}:/certs/{{ registry_tls_key | basename }}
-      -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/{{ registry_tls_fullchain | basename }}
-      -e REGISTRY_HTTP_TLS_KEY=/certs/{{ registry_tls_key | basename }}
-      {% endif %}
-      -p 5000:5000
   include_role:
     name: podman_container_systemd
   when: not skip_podman_registry_install
+
+- name: reload nginx config
+  command: "podman exec {{ nginx_container_name }} nginx -s reload"
+  register: result_reload
+  until: result_reload.changed
+  retries: 3
+  delay: 5
+  when: container_state is not defined

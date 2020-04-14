@@ -6,3 +6,9 @@ podman_registry_dir: "/var/lib/containers/registry"
 
 podman_registry_container_name: "registry"
 podman_registry_container_image: "registry:2"
+
+podman_registry_user: "registry"
+podman_registry_password: "registrysecret"
+
+nginx_rootdir: "/tmp/nginx"
+nginx_confdir: "/etc/nginx/conf.d"

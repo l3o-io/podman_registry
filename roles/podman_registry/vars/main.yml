@@ -1,0 +1,3 @@
+--- # roles/podman_registry/vars/main.yml
+
+nginx_confdir_volume_host_path: "{{ nginx_rootdir }}{{ nginx_confdir }}"
