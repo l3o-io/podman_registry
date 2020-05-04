@@ -1,0 +1,21 @@
+galaxy_info:
+  author: Christian Felder
+  description: Setup container registry using podman and an existing nginx container
+  company: l3o.io
+  license: GPL-3.0-or-later
+  min_ansible_version: 2.9
+  platforms:
+    - name: Fedora
+      versions:
+      - 30
+    - name: EL
+      versions:
+      - 8
+  galaxy_tags:
+    - containers
+    - podman
+    - libpod
+    - registry
+    - nginx
+    - https
+    - web
